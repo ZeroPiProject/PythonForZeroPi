@@ -2,6 +2,7 @@
 * prepare your zeropi board. ( install the Firmware: https://github.com/ZeroPiProject/ZeroPi_Firmware)
 * git clone https://github.com/ZeroPiProject/PythonForZeroPi on your Raspberry Pi
 * **sudo python your.py**
+
 ## Example
 ```
 from lib.zeropi import *
