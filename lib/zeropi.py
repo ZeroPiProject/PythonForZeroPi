@@ -118,11 +118,11 @@ class zeropi():
 		self.__writePackage('M54 D'+str(port)+'\n')
 
 	def stepperMove(self,port,distance,speed,callback):
-		self.__doCallback('M52 D'+str(port),callback)
+		self.__doCallback('R52 D'+str(port),callback)
 		self.__writePackage('M52 D'+str(port)+' R'+str(distance)+' F'+str(speed)+'\n')
 	
 	def stepperMoveTo(self,port,position,speed,callback):
-		self.__doCallback('M52 D'+str(port),callback)
+		self.__doCallback('R52 D'+str(port),callback)
 		self.__writePackage('M52 D'+str(port)+' A'+str(position)+' F'+str(speed)+'\n')
 
 	def stepperSetting(self,port,microstep,accelate):
@@ -138,11 +138,11 @@ class zeropi():
 		self.__writePackage('M11 D'+str(pin)+' P'+str(level)+'\n')
 
 	def digitalRead(self,pin,callback):
-		self.__doCallback('M12 D'+str(pin),callback)
+		self.__doCallback('R12 D'+str(pin),callback)
 		self.__writePackage('M12 D'+str(pin)+'\n')
 	
 	def analogRead(self,pin,callback):
-		self.__doCallback('M13 A'+str(pin),callback)
+		self.__doCallback('R13 A'+str(pin),callback)
 		self.__writePackage('M13 A'+str(pin)+'\n')
 	
 	def onParse(self,msg):
