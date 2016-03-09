@@ -145,42 +145,15 @@ class zeropi():
 		self.__writePackage('M13 A'+str(pin)+'\n')
 	
 	def onParse(self,msg):
-		self.message=msg;
+		self.message+=msg;
 		if len(self.message)>3:
 			if len(self.message.split("OK"))>1:
+				self.message = "".join(("".join(self.message.split("\r"))).split("\n"))
 				if len(self.message.split("L"))>1:
 					self.__selectors["callback_"+self.message[0:(self.message.index("L")-1)]](int(self.message.split("L")[1].split(" ")[0]));
 				else:
 					self.__selectors["callback_"+self.message[0:(self.message.index("OK")-1)]]();
-		self.message = "";
+				self.message = "";
 				
-	def readFloat(self, position):
-		v = [self.buffer[position], self.buffer[position+1],self.buffer[position+2],self.buffer[position+3]]
-		return struct.unpack('<f', struct.pack('4B', *v))[0]
-	def readShort(self, position):
-		v = [self.buffer[position], self.buffer[position+1]]
-		return struct.unpack('<h', struct.pack('2B', *v))[0]
-	def readString(self, position):
-		l = self.buffer[position]
-		position+=1
-		s = ""
-		for i in Range(l):
-			s += self.buffer[position+i].charAt(0)
-		return s
-	def readDouble(self, position):
-		v = [self.buffer[position], self.buffer[position+1],self.buffer[position+2],self.buffer[position+3]]
-		return struct.unpack('<f', struct.pack('4B', *v))[0]
-
-	def responseValue(self, extID, value):
-		self.__selectors["callback_"+str(extID)](value)
-		
 	def __doCallback(self, extID, callback):
 		self.__selectors["callback_"+str(extID)] = callback
-
-	def float2bytes(self,fval):
-		val = struct.pack("f",fval)
-		return [ord(val[0]),ord(val[1]),ord(val[2]),ord(val[3])]
-
-	def short2bytes(self,sval):
-		val = struct.pack("h",sval)
-		return [ord(val[0]),ord(val[1])]
