@@ -13,7 +13,7 @@ class mSerial():
 		print self
 
 	def start(self):
-		self.ser = serial.Serial('/dev/ttyAMA0',115200,timeout=0.5)
+		self.ser = serial.Serial('/dev/ttyAMA0',115200,timeout=0)
 	
 	def device(self):
 		return self.ser
@@ -41,6 +41,9 @@ class mSerial():
 
 	def read(self,n):
 		return self.ser.read(n)
+
+	def readline(self):
+		return self.ser.readline()
 
 	def isOpen(self):
 		return self.ser.isOpen()
@@ -93,67 +96,69 @@ class zeropi():
 				break
 			try:	
 				if self.device.isOpen()==True:
-					n = self.device.inWaiting()
-					if n>0:
-						callback(self.device.read(n))
+					n = self.device.readline()
+					if len(n)>0:
+						callback(n)
+					else:
+						sleep(0.01)
 				else:	
 					sleep(0.5)
 			except Exception,ex:
 				print 'onRead...'+str(ex)
-				self.exiting = True;
+				#self.exiting = True;
 				#self.close()
 				sleep(0.01)
 				
 	def __writePackage(self,pack):
-		self.device.writePackage(pack)
+		self.device.writePackage('\n'+pack+'\n')
 
 	def motorRun(self,port,speed):
-		self.__writePackage('M21 D'+str(port)+' P'+str(speed)+'\n')
+		self.__writePackage('M21 D'+str(port)+' P'+str(speed))
 
 	def stepperRun(self,port,speed):
-		self.__writePackage('M51 D'+str(port)+' F'+str(speed)+'\n')
+		self.__writePackage('M51 D'+str(port)+' F'+str(speed))
 
 	def stepperStop(self,port):
-		self.__writePackage('M54 D'+str(port)+'\n')
+		self.__writePackage('M54 D'+str(port))
 
 	def stepperMove(self,port,distance,speed,callback):
 		self.__doCallback('R52 D'+str(port),callback)
-		self.__writePackage('M52 D'+str(port)+' R'+str(distance)+' F'+str(speed)+'\n')
-	
+		self.__writePackage('M52 D'+str(port)+' R'+str(distance)+' F'+str(speed))
+
 	def stepperMoveTo(self,port,position,speed,callback):
 		self.__doCallback('R52 D'+str(port),callback)
-		self.__writePackage('M52 D'+str(port)+' A'+str(position)+' F'+str(speed)+'\n')
+		self.__writePackage('M52 D'+str(port)+' A'+str(position)+' F'+str(speed))
 
 	def stepperSetting(self,port,microstep,accelate):
-		self.__writePackage('M53 D'+str(port)+' S'+str(microstep)+' A'+str(accelate)+'\n')
+		self.__writePackage('M53 D'+str(port)+' S'+str(microstep)+' A'+str(accelate))
 
 	def servoRun(self,port,angle):
-		self.__writePackage('M41 D'+str(port)+' A'+str(angle)+'\n')
+		self.__writePackage('M41 D'+str(port)+' A'+str(angle))
 		
 	def digitalWrite(self,pin,level):
-		self.__writePackage('M11 D'+str(pin)+' L'+str(level)+'\n')
+		self.__writePackage('M11 D'+str(pin)+' L'+str(level))
 
 	def pwmWrite(self,pin,pwm):
-		self.__writePackage('M11 D'+str(pin)+' P'+str(level)+'\n')
+		self.__writePackage('M11 D'+str(pin)+' P'+str(level))
 
 	def digitalRead(self,pin,callback):
 		self.__doCallback('R12 D'+str(pin),callback)
-		self.__writePackage('M12 D'+str(pin)+'\n')
+		self.__writePackage('M12 D'+str(pin))
 	
 	def analogRead(self,pin,callback):
 		self.__doCallback('R13 A'+str(pin),callback)
-		self.__writePackage('M13 A'+str(pin)+'\n')
+		self.__writePackage('M13 A'+str(pin))
 	
 	def onParse(self,msg):
-		self.message+=msg;
-		if len(self.message)>3:
-			if len(self.message.split("OK"))>1:
-				self.message = "".join(("".join(self.message.split("\r"))).split("\n"))
-				if len(self.message.split("L"))>1:
-					self.__selectors["callback_"+self.message[0:(self.message.index("L")-1)]](int(self.message.split("L")[1].split(" ")[0]));
+		if len(msg)>3:
+			if len(msg.split("OK"))>1:
+				msg = "".join(("".join(msg.split("\r"))).split("\n"))
+				if len(msg.split("L"))>1:
+					if self.__selectors["callback_"+msg[0:(msg.index("L")-1)]]:
+						self.__selectors["callback_"+msg[0:(msg.index("L")-1)]](int(msg.split("L")[1].split(" ")[0]));
 				else:
-					self.__selectors["callback_"+self.message[0:(self.message.index("OK")-1)]]();
-				self.message = "";
+					if self.__selectors["callback_"+msg[0:(msg.index("OK")-1)]]:
+						self.__selectors["callback_"+msg[0:(msg.index("OK")-1)]]();
 				
 	def __doCallback(self, extID, callback):
 		self.__selectors["callback_"+str(extID)] = callback
