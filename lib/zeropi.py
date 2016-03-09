@@ -96,7 +96,6 @@ class zeropi():
 					n = self.device.inWaiting()
 					if n>0:
 						callback(self.device.read(n))
-					sleep(0.1)
 				else:	
 					sleep(0.5)
 			except Exception,ex:
