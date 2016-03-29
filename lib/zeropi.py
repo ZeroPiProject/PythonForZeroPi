@@ -54,7 +54,17 @@ class mSerial():
 	def close(self):
 		self.ser.close()
 		
-	
+A0 = 14
+A1 = 15
+A2 = 16 
+A3 = 17 
+A4 = 18 
+A5 = 19 
+MO = 23
+MI = 22
+SCK = 24
+SDA = 32
+SCL = 33
 class zeropi():
 	def __init__(self):
 		print "init zeropi"
